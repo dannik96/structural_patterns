@@ -1,6 +1,8 @@
 package cvut.fel.omo;
 
 import cvut.fel.omo.model.BonusEmployee;
+import cvut.fel.omo.model.LegacyEmployee;
+import cvut.fel.omo.model.Manager;
 import cvut.fel.omo.model.SimpleEmployee;
 
 
@@ -36,8 +38,22 @@ public class Main {
         Employee employee1 = new SimpleEmployee("John Doe", 5000);
         Employee employee2 = new SimpleEmployee("Jane Doe", 6000);
 
+        // Vytvoření manažera a přidání podřízených zaměstnanců
+        // TODO Proč nemůže být Employe = manager?
+        Manager manager = new Manager("Manager Smith");
+        manager.addSubordinate(employee1);
+        manager.addSubordinate(employee2);
+
         // Přidání bonusu a prémie k měsíčnímu platu pomocí Decorator Pattern
         BonusEmployee bonusPerformanceEmployee = new BonusEmployee(employee1, 1000, 500);
+
+        // Přidání proxy zaměstnance s omezeným přístupem pomocí Proxy Pattern
+        // TODO Proč použít?
+        EmployeeProxy sensitiveProxyEmployee = new EmployeeProxy(new SimpleEmployee("Sensitive Employee", 7000), "Sensitive");
+
+        // Přidání legacy zaměstnance pomocí Adapter Pattern
+        LegacyEmployee legacyEmployee = new LegacyEmployee();
+        Employee adaptedLegacyEmployee = new LegacyEmployeeAdapter(legacyEmployee);
 
         // Zobrazení informací pro jednotlivé zaměstnance
         System.out.println("Displaying information for each employee:");
@@ -48,6 +64,9 @@ public class Main {
         System.out.println("\nSimple Employee 2:");
         employee2.displayInformation();
 
+        System.out.println("\nComposite Manager:");
+        manager.displayInformation();
+
         System.out.println("\nEmployee with Bonus and Performance Bonus:");
         bonusPerformanceEmployee.displayInformation();
 
@@ -57,6 +76,14 @@ public class Main {
         // Zobrazení aktualizovaných informací pro zaměstnance s prémiovým bonusem
         System.out.println("\nEmployee with Updated Performance Bonus:");
         bonusPerformanceEmployee.displayInformation();
+
+        // Zobrazení informací pro zaměstnance s proxy (omezený přístup pro citlivé informace)
+        System.out.println("\nSensitive Proxy Employee:");
+        sensitiveProxyEmployee.displayInformation();
+
+        // Zobrazení informací pro legacy zaměstnance
+        System.out.println("\nAdapted Legacy Employee:");
+        adaptedLegacyEmployee.displayInformation();
     }
-}    }
-        }
+
+}

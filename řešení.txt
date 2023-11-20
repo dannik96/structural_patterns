@@ -1,0 +1,199 @@
+import java.util.ArrayList;
+import java.util.List;
+
+// Rozhraní pro reprezentaci zaměstnance
+interface Employee {
+    double getMonthlySalary();
+    void displayInformation();
+}
+
+// Konkrétní implementace jednoduchého zaměstnance
+class SimpleEmployee implements Employee {
+    private String name;
+    private double monthlySalary;
+
+    public SimpleEmployee(String name, double monthlySalary) {
+        this.name = name;
+        this.monthlySalary = monthlySalary;
+    }
+
+    @Override
+    public double getMonthlySalary() {
+        return monthlySalary;
+    }
+
+    @Override
+    public void displayInformation() {
+        System.out.println("Simple Employee: " + name + ", Monthly Salary: $" + monthlySalary);
+    }
+}
+
+// Dekorátor pro zaměstnance, který přidává bonus a prémii k měsíčnímu platu
+class BonusPerformanceEmployeeDecorator implements Employee {
+    private Employee decoratedEmployee;
+    private double bonus;
+    private double performanceBonus;
+
+    public BonusPerformanceEmployeeDecorator(Employee decoratedEmployee, double bonus, double performanceBonus) {
+        this.decoratedEmployee = decoratedEmployee;
+        this.bonus = bonus;
+        this.performanceBonus = performanceBonus;
+    }
+
+    @Override
+    public double getMonthlySalary() {
+        // Přidání bonusu a prémie k měsíčnímu platu
+        return decoratedEmployee.getMonthlySalary() + bonus + performanceBonus;
+    }
+
+    public void setPerformanceBonus(double performanceBonus) {
+        this.performanceBonus = performanceBonus;
+    }
+
+    @Override
+    public void displayInformation() {
+        decoratedEmployee.displayInformation();
+        System.out.println("Bonus: $" + bonus);
+        System.out.println("Performance Bonus: $" + performanceBonus);
+    }
+}
+
+// Proxy pro zaměstnance, který omezuje přístup k citlivým informacím podle role
+class EmployeeProxy implements Employee {
+    private Employee realEmployee;
+    private String role;
+
+    public EmployeeProxy(Employee realEmployee, String role) {
+        this.realEmployee = realEmployee;
+        this.role = role;
+    }
+
+    @Override
+    public double getMonthlySalary() {
+        // Proxy nemění mzdovou politiku, pouze omezuje přístup
+        return realEmployee.getMonthlySalary();
+    }
+
+    @Override
+    public void displayInformation() {
+        // Omezení přístupu pro zaměstnance s rolí "Sensitive"
+        if (role.equals("Sensitive")) {
+            System.out.println("Access Denied: Sensitive information not accessible.");
+        } else {
+            realEmployee.displayInformation();
+        }
+    }
+}
+
+// Konkrétní implementace manažera s podřízenými zaměstnanci
+class CompositeManager implements Employee {
+    private String name;
+    private List<Employee> subordinates = new ArrayList<>();
+
+    public CompositeManager(String name) {
+        this.name = name;
+    }
+
+    public void addSubordinate(Employee subordinate) {
+        subordinates.add(subordinate);
+    }
+
+    @Override
+    public double getMonthlySalary() {
+        // Mzdová politika manažera může zahrnovat i bonusy či prémie
+        double totalSalary = 0;
+        for (Employee subordinate : subordinates) {
+            totalSalary += subordinate.getMonthlySalary();
+        }
+        return totalSalary;
+    }
+
+    @Override
+    public void displayInformation() {
+        System.out.println("Manager: " + name);
+        System.out.println("Subordinates:");
+        for (Employee subordinate : subordinates) {
+            subordinate.displayInformation();
+        }
+    }
+}
+
+// Starší implementace zaměstnance, kterou chceme adaptovat
+class LegacyEmployee {
+    public double calculateSalary() {
+        // Starší logika pro výpočet mzdy
+        return 4500;
+    }
+}
+
+// Adapter pro zaměstnance, který adaptuje starší implementaci na nové rozhraní
+class LegacyEmployeeAdapter implements Employee {
+    private LegacyEmployee legacyEmployee;
+
+    public LegacyEmployeeAdapter(LegacyEmployee legacyEmployee) {
+        this.legacyEmployee = legacyEmployee;
+    }
+
+    @Override
+    public double getMonthlySalary() {
+        return legacyEmployee.calculateSalary();
+    }
+
+    @Override
+    public void displayInformation() {
+        System.out.println("Legacy Employee: Monthly Salary: $" + getMonthlySalary());
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        // Vytvoření jednoduchých zaměstnanců
+        Employee employee1 = new SimpleEmployee("John Doe", 5000);
+        Employee employee2 = new SimpleEmployee("Jane Doe", 6000);
+
+        // Vytvoření manažera a přidání podřízených zaměstnanců
+        CompositeManager manager = new CompositeManager("Manager Smith");
+        manager.addSubordinate(employee1);
+        manager.addSubordinate(employee2);
+
+        // Přidání bonusu a prémie k měsíčnímu platu pomocí Decorator Pattern
+        BonusPerformanceEmployeeDecorator bonusPerformanceEmployee = new BonusPerformanceEmployeeDecorator(employee1, 1000, 500);
+
+        // Přidání proxy zaměstnance s omezeným přístupem pomocí Proxy Pattern
+        Employee sensitiveProxyEmployee = new EmployeeProxy(new SimpleEmployee("Sensitive Employee", 7000), "Sensitive");
+
+        // Přidání legacy zaměstnance pomocí Adapter Pattern
+        LegacyEmployee legacyEmployee = new LegacyEmployee();
+        Employee adaptedLegacyEmployee = new LegacyEmployeeAdapter(legacyEmployee);
+
+        // Zobrazení informací pro jednotlivé zaměstnance
+        System.out.println("Displaying information for each employee:");
+
+        System.out.println("\nSimple Employee 1:");
+        employee1.displayInformation();
+
+        System.out.println("\nSimple Employee 2:");
+        employee2.displayInformation();
+
+        System.out.println("\nComposite Manager:");
+        manager.displayInformation();
+
+        System.out.println("\nEmployee with Bonus and Performance Bonus:");
+        bonusPerformanceEmployee.displayInformation();
+
+        // Nastavení nové prémie za výkon
+        bonusPerformanceEmployee.setPerformanceBonus(700);
+
+        // Zobrazení aktualizovaných informací pro zaměstnance s prémiovým bonusem
+        System.out.println("\nEmployee with Updated Performance Bonus:");
+        bonusPerformanceEmployee.displayInformation();
+
+        // Zobrazení informací pro zaměstnance s proxy (omezený přístup pro citlivé informace)
+        System.out.println("\nSensitive Proxy Employee:");
+        sensitiveProxyEmployee.displayInformation();
+
+        // Zobrazení informací pro legacy zaměstnance
+        System.out.println("\nAdapted Legacy Employee:");
+        adaptedLegacyEmployee.displayInformation();
+    }
+}
